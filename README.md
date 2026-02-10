@@ -22,11 +22,13 @@ then visit
 localhost:8080/asts.html
 in your browser
 
-## RF Changes
+## RF comments
 - the "canvas" center is given pixel coords (0,0) so that's why you see SCREENWIDTH/2 so often.
 - VERTS is not explained but it must surely means VERTEX/VERTICES
 - the ship and asteroids vertices are given small values such as .1, .4 etc. this is because they are viewed as "object vertices", they need to be mu
 - player/ship and asteroid vertices are rendered "world vertices" or "screen vertices via multiplication.
+- the "alive" marker refers to the object being on the screen, so a certain number are created but only a few are shown.
+- note its SDL v1.2 not the more usual SDL v2 BUT -s USE_SDL=2?
 
 The vector type was just the (x,y) float, and was called vector because it has a notional origin at 0,0. I prefer to call this a "Point Vector" rather
 than vector, which for me is an array. And, in truth, it pretty much is just a point.

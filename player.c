@@ -24,6 +24,8 @@ void init_player(player_t* p)
 	for(int i = 0; i < P_VERTS; i++) {
 		multiply_vector(&p->obj_vert[i], -1);
 		multiply_vector(&p->obj_vert[i], 12);
+        // why not multiply by just -12?
+
 		add_vector(&p->world_vert[i], &p->obj_vert[i]);
 		add_vector(&p->world_vert[i], &translation);
 	}

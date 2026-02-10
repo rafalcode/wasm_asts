@@ -158,52 +158,32 @@ int shrink_asteroid(ast_t* a, int size)
     if (size == LARGE) {
         //shrink asteroid
         for (i = 0; i < VERTS; i++)
-            divide_vector(&a->obj_vert[i], 2);
+            divide_vector(&a->obj_vert[i], 2); // cut down to half size
         a->size = MEDIUM;
         return 0;
-    }
-
-    if (size == MEDIUM) {
-
+    } else if (size == MEDIUM) {
         //shrink asteroid
-        for (i = 0; i < VERTS; i++) {
-
+        for (i = 0; i < VERTS; i++)
             divide_vector(&a->obj_vert[i], 4);
-        }
-
         a->size = SMALL;
-
         return 0;
-    }
-
-    if (size == SMALL) {
-
-        //shrink asteroid
-        for (i = 0; i < VERTS; i++) {
-
+    } else if (size == SMALL) {
+        // shrink asteroid: but surely it must disappear/be annihilated?
+        for (i = 0; i < VERTS; i++)
             divide_vector(&a->obj_vert[i], 8);
-        }
-
         return 0;
     }
 
     return 1;
 }
 
-void spawn_asteroids(ast_t a[], int length, int size, pvec_t v) {
-
-    int i = 0;
-    int count = 0;
-
+void spawn_asteroids(ast_t a[], int length, int size, pvec_t v)
+{
+    int i, count = 0;
     for (i = 0; i < length; i++) {
-
         if(a[i].alive == 0) {
-
-            if (count == 3) {
-
+            if (count == 3)
                 break;
-            }
-
             a[i].location = v;
             a[i].hit_radius /= 2;
             a[i].alive = 1;
@@ -213,57 +193,35 @@ void spawn_asteroids(ast_t a[], int length, int size, pvec_t v) {
     }
 }
 
-void bounds_asteroids(ast_t asteroids[], int size) {
-
-    int i = 0;
-
+void bounds_asteroids(ast_t asteroids[], int size)
+{
+    int i;
     for (i = 0 ; i < size; i++) {
-
-        if (asteroids[i].location.x < -SCREEN_WIDTH / 2) {
-
+        if (asteroids[i].location.x < -SCREEN_WIDTH / 2)
             asteroids[i].location.x = SCREEN_WIDTH / 2;
-        }
-
-        if (asteroids[i].location.x > SCREEN_WIDTH / 2) {
-
+        else if (asteroids[i].location.x > SCREEN_WIDTH / 2)
             asteroids[i].location.x = -SCREEN_WIDTH / 2;
-        }
 
-        if (asteroids[i].location.y < -SCREEN_HEIGHT / 2) {
-
+        if (asteroids[i].location.y < -SCREEN_HEIGHT / 2)
             asteroids[i].location.y = SCREEN_HEIGHT / 2;
-        }
-
-        if (asteroids[i].location.y > SCREEN_HEIGHT / 2) {
-
+        else if (asteroids[i].location.y > SCREEN_HEIGHT / 2)
             asteroids[i].location.y = -SCREEN_HEIGHT / 2;
-        }
     }
 }
 
-
-int collision_asteroids(ast_t asteroids[], int size, pvec_t* v, float radius) {
-
-
-    int i = 0;
-
-
+int collision_asteroids(ast_t asteroids[], int size, pvec_t* v, float radius)
+{
+    int i;
     for (i = 0; i < size; i++) {
-
-        //only check for collions for asteroids that are shown onscreen
+        //only check for collisions for asteroids that are shown onscreen
         if (asteroids[i].alive == 1) {
-
             float sum = asteroids[i].hit_radius + radius;
             float a = pow(asteroids[i].location.x - v->x, 2);
             float b = pow(asteroids[i].location.y - v->y, 2);
             float distance = sqrt(a + b);
-
-            if (distance < sum) {
-
+            if (distance < sum)
                 return i;
-            }
         }
     }
-
     return -1;
 }

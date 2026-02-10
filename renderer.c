@@ -1,4 +1,3 @@
-//renderer.c
 #include "renderer.h"
 
 int draw_pixel(uint32_t* pixel_buffer, int x, int y, uint32_t colour)
@@ -19,6 +18,10 @@ int draw_pixel(uint32_t* pixel_buffer, int x, int y, uint32_t colour)
 
 int draw_line(uint32_t* pixel_buffer, int x1, int y1, int x2, int y2, uint32_t colour)
 {
+    /* Jury is out on this way of drawing a line,
+     * though it's about activating hte pixels that coincide with its direction
+     * it's understood there will be an error, as it's not exact and therefore use of prefix "ideal_"
+     */
     int i, tmp;
     float slope;
 	//plot the first point
@@ -46,7 +49,7 @@ int draw_line(uint32_t* pixel_buffer, int x1, int y1, int x2, int y2, uint32_t c
         // needs to explain the canvas coords: I think with centre at 0,0 a bigger y means higher up, opposed to say Cairo.
 		if (y1 <= y2) {
 			float ideal_y = y1 + slope;
-			int y = (int) round(ideal_y);
+			int y = (int)(ideal_y+.5); // faster call to round()
 			float error = ideal_y - y;
 
 			//loop through all the X values
@@ -81,30 +84,20 @@ int draw_line(uint32_t* pixel_buffer, int x1, int y1, int x2, int y2, uint32_t c
 	}
 
 	//the length of the line is greater along the Y axis
-	if (fabs(dy) > dx) {
-		
-		float slope = (float) dx / dy;
-		
+	if(abs(dy) > dx) {
+		slope = (float) dx / dy;
 		//line travels from top to bottom
 		if (y1 < y2) {
-			
 			float ideal_x = x1 + slope;
 			int x = (int) round(ideal_x);
 			float error = ideal_x - x;
 
-			int i = 0;
-			
 			//loop through all the y values
 			for(i = 1; i <= dy; i++) {
-				
 				int y = y1 + i;
-				
 				draw_pixel(pixel_buffer, x, y, colour);
-				
 				error += slope;
-
-				if (error  >= 0.5) {
-				
+				if (error >= .5) {
 					x++;
 					error -= 1;
 				}
@@ -113,31 +106,22 @@ int draw_line(uint32_t* pixel_buffer, int x1, int y1, int x2, int y2, uint32_t c
 		
 		//draw line from bottom to top
 		if (y1 > y2) {
-			
 			float ideal_x = x1 - slope;
 			int x = (int) round(ideal_x);
 			float error = ideal_x - x;
 
-			int i = 0;
-			
 			//loop through all the y values
-			for(i = 1; i <= fabs(dy); i++) {
-				
+			for(i = 1; i <= abs(dy); i++) {
 				int y = y1 - i;
-				
 				draw_pixel(pixel_buffer, x, y, colour);
-				
 				error += slope;
-
-				if (error  <= -0.5) {
-				
+				if (error <= -.5) {
 					x++;
 					error += 1;
 				}
 			}
 		}
 	}
-
 	return 0;	
 }
 
@@ -147,4 +131,3 @@ void clear_pixels(uint32_t* pixel_buffer, uint32_t colour)
 	for (int i = 0; i < buffer_size; i++)
 		pixel_buffer[i] = colour;
 }
-

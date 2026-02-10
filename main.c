@@ -10,15 +10,41 @@
 #define ASTEROIDS 27
 #define LIVES 3
 
-int init(int width, int height);
-
 SDL_Window* window = NULL;
 SDL_Renderer *renderer;
 SDL_Texture *screen;	
 uint32_t* pixels = NULL;
-struct asteroid asteroids[ASTEROIDS];
-struct player p;
-struct player lives[LIVES];
+ast_t asteroids[ASTEROIDS];
+player_t p;
+player_t lives[LIVES];
+
+int init(int width, int height)
+{
+	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+		return 1;
+	} 
+	
+	SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN, &window, &renderer);
+	if (window == NULL) { 
+		printf ("Window could not be created! SDL_Error: %s\n", SDL_GetError());
+		return 1;
+	}
+
+	screen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
+	if (screen == NULL) { 
+		printf ("Texture could not be created! SDL_Error: %s\n", SDL_GetError());
+		return 1;
+	}
+	
+	pixels = (Uint32*) malloc((SCREEN_WIDTH * SCREEN_HEIGHT) * sizeof(Uint32));
+    // Uint32  obviousy the same as uint32_t, but where is it from?
+	if (pixels == NULL) {
+		printf ("Error allocating pixel buffer");
+		return 1;
+	}
+	return 0;
+}
 
 void mainloop()
 {
@@ -36,7 +62,7 @@ void mainloop()
 		quit = 1;
 		
 	if (state[SDL_SCANCODE_UP]) {
-		struct vector2d thrust = get_direction(&p);
+		pvec_t thrust = get_direction(&p);
 		multiply_vector(&thrust, .06);
 		apply_force(&p.velocity, thrust);
 	}
@@ -89,14 +115,14 @@ void mainloop()
 	draw_player(pixels, &lives[2]);
 	
 	int i = 0;
-	struct vector2d translation = {-SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2};
+	pvec_t translation = {-SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2};
 
 	for (i = 0; i < BULLETS; i++) {
 		//only check for collision for bullets that are shown on screen
 		if (p.bullets[i].alive == TRUE) {
 			//convert bullet screen space location to world space to compare
 			//with asteroids world space to detect a collision
-			struct vector2d world = add_vector_new(&p.bullets[i].location, &translation);
+			pvec_t world = add_pvec_new(&p.bullets[i].location, &translation);
 			int index = collision_asteroids(asteroids, ASTEROIDS, &world, 1);
 			
 			//collision occured
@@ -123,34 +149,6 @@ void mainloop()
 	}
 }
 
-int init(int width, int height)
-{
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		printf("SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
-		return 1;
-	} 
-	
-	SDL_CreateWindowAndRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN, &window, &renderer);
-	screen = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, SCREEN_WIDTH, SCREEN_HEIGHT);
-	pixels = (Uint32*) malloc((SCREEN_WIDTH * SCREEN_HEIGHT) * sizeof(Uint32));
-
-	if (window == NULL) { 
-		printf ("Window could not be created! SDL_Error: %s\n", SDL_GetError());
-		return 1;
-	}
-
-	if (screen == NULL) { 
-		printf ("Texture could not be created! SDL_Error: %s\n", SDL_GetError());
-		return 1;
-	}
-	
-	if (pixels == NULL) {
-		printf ("Error allocating pixel buffer");
-		return 1;
-	}
-	return 0;
-}
-
 int main (int argc, char* args[])
 {
 	//SDL Window setup
@@ -158,7 +156,7 @@ int main (int argc, char* args[])
 		return 0;
 
 	int i, j, offset=0;
-	struct vector2d translation = {-SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2};
+	pvec_t translation = {-SCREEN_WIDTH / 2, -SCREEN_HEIGHT / 2};
 
 	//set up icons used to represent player lives
 	for (i = 0; i < LIVES; i++) {
@@ -168,7 +166,7 @@ int main (int argc, char* args[])
 		for (j = 0; j < P_VERTS; j++)
 			divide_vector(&lives[i].obj_vert[j], 2);
 
-		struct vector2d top_left = {20 + offset, 20};
+		pvec_t top_left = {20 + offset, 20};
 		add_vector(&top_left, &translation);
 		lives[i].location = top_left;
 		update_player(&lives[i]);
